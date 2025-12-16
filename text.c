@@ -1,7 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "text.h"
+
+
+void size_checker(size_t* size, size_t* cap, void** buf, int type_s){
+    if ((*size+1) >= *cap){
+        *cap *= 2;
+        *buf = realloc(*buf, *cap*type_s);
+    }
+}
+
+
+void free_and_close_all(char* buf1, ...){
+    /* This function DON'T WORK yet,
+    need read about "stdarg.h" */
+    va_list ap;
+    va_start(ap, buf1);
+    while (buf1){
+
+        *buf1++;
+    }
+    va_end(ap);
+}
 
 
 char* base_info(){
@@ -11,6 +33,7 @@ char* base_info(){
 
     printf("Input file name: ");
     while ((ch = getchar()) != EOF && ch != '\n'){
+        size_checker(&size, &cap, (void**)&name, sizeof(char));
         name[size++] = ch;
         name[size] = '\0';
     }
@@ -24,11 +47,7 @@ char* read(FILE* fl){
     char ch;
 
     while ((ch = getc(fl)) != EOF){
-        if ((size_text+1) >= cap_text){
-            cap_text *= 2;
-            text = realloc(text, cap_text*sizeof(char));
-        }
-
+        size_checker(&size_text, &cap_text, (void**)&text, sizeof(char));
         text[size_text++] = ch;
         text[size_text] = '\0';
     }
@@ -36,10 +55,36 @@ char* read(FILE* fl){
 }
 
 
-sents_t* cut_to_strokes(char* text){
+sents_t reed_to_sent(char* text){
+    sents_t rez;
+    size_t cap_s = 10, size_s = 0;
+    rez.mas = malloc(cap_s*sizeof(char*));
+    size_t cap = 10, size = 0;
+    char* stroke = malloc(cap*sizeof(char));
+
     for (int i = 0; text[i] != '\0'; i++){
-        if (text[i] == '\0') printf("///////%d, %c", i, text[i-1]);
+        if (text[i] == '\n' || (text[i+1] == '\0')){
+            if (text[i+1] == '\0'){
+                size_checker(&size, &cap, (void**)&stroke, sizeof(char));
+                stroke[size++] = text[i];
+                stroke[size] = '\0';
+            }
+            size_checker(&size_s, &cap_s, (void**)&rez.mas, sizeof(char*));
+            rez.mas[size_s] = malloc(size*sizeof(char));
+            strcpy(rez.mas[size_s++], stroke);
+
+            size = 0;
+            stroke[0] = '\0';
+        }else{
+            size_checker(&size, &cap, (void**)&stroke, sizeof(char));
+            stroke[size++] = text[i];
+            stroke[size] = '\0';
+        }
     }
+
+    free(stroke);
+    rez.len = size_s;
+    return rez;
 }
 
 
