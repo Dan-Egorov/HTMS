@@ -8,7 +8,7 @@ int main(){
     size_t size = 0;
     FILE* file;
     char ch;
-    sents_t* sentenses;
+    sents_t sentenses;
 
     name = base_info();
 
@@ -20,13 +20,14 @@ int main(){
 
     text = read(file);
     printf("%s\n", text);
-    sentenses = cut_to_strokes(text);
+    sentenses = reed_to_sent(text);
 
     printf("%s\n", text);
-    /*for (int i = 0; i < sentenses->len; i++){
-        printf("%s\n", sentenses->mas[i]);
-    }*/
-    /*for (int i = 0; i < sentenses->len; i++) free(sentenses->mas[i]);*/
+    for (int i = 0; i < sentenses.len; i++){
+        printf("//%s\n", sentenses.mas[i]);
+    }
+    for (int i = 0; i < sentenses.len; i++) free(sentenses.mas[i]);
+    free(sentenses.mas);
     free(name);
     free(text);
     fclose(file);
